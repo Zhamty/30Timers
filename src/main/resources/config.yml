@@ -1,0 +1,71 @@
+# The time between random items (in seconds)
+time_between_items: 30
+# Enable the action bar to be shown with the time left
+allow_action_bar: true
+# How many seconds have to be left in order to show the action bar.
+action_bar_seconds: 30
+# Name for the main command /<value>
+main_command: 30timers
+# Name for the admin command /<value>
+admin_command: 30timersadmin
+disabled_gamemodes:
+  # Gamemodes in which the timer does not run
+  - CREATIVE
+  - SPECTATOR
+
+# Enable/disable random items per world
+worlds:
+  # List type, set to NONE if not used.
+  # Available types: WHITELIST, BLACKLIST, NONE
+  list_type: NONE
+  list:
+    - "world"
+    - "world_nether"
+
+# List of items that will not be given to players
+blacklisted_items:
+  - "BARRIER"
+  - "BEDROCK"
+  - "COMMAND_BLOCK"
+  - "CHAINED_COMMAND_BLOCK"
+  - "REPEATING_COMMAND_BLOCK"
+
+messages:
+  commands:
+    help:
+      - "&r----- &b&l30Timers &r-----"
+      - "&r/%COMMAND% toggle&b Toggles random items for yourself"
+      - "&r/%COMMAND% about&b Know information about the plugin"
+      - "&r/%COMMAND% time&b Check how much time is left to get random items"
+      - "&r/%COMMAND% help&b Shows this list"
+      - "&r----- &b&l30Timers &r-----"
+    help_admin:
+      - "&r----- &b&l30Timers Admin &r-----"
+      - "&r/%COMMAND% toggle&b Toggles random items globally"
+      - "&r/%COMMAND% toggle <on/off>&b Toggles random items globally"
+      - "&r/%COMMAND% toggle <player>&b Toggles random items for a player"
+      - "&r/%COMMAND% toggle <player> <on/off>&b Toggles random items for a player"
+      - "&r/%COMMAND% reload&b Reloads the plugin config"
+      - "&r/%COMMAND% help&b Shows this list"
+      - "&r----- &b&l30Timers Admin &r-----"
+    time:
+      singular: "&bTime left: &f1 second"
+      plural: "&bTime left: &f%TIME% seconds"
+    reload:
+      reloading: "&eReloading the plugin..."
+      reloaded: "&aPlugin reloaded!"
+    toggle:
+      nothing_changed: "&eNothing changed"
+      enable_player: "&aRandom items enabled for %PLAYER%"
+      disable_player: "&cRandom items disabled for %PLAYER%"
+    unknown: "&cUnknown sub-command, try /%COMMAND% help."
+
+  random_items:
+    next_item_action_bar: "&aRandom item in %SECONDS% seconds"
+    on_item_receive_chat: "&aYour random item: %ITEM%"
+    disable: "&cRandom items disabled"
+    enable: "&aRandom items enabled"
+    disable_global: "&cRandom items disabled globally"
+    enable_global: "&aRandom items enabled globally"
+
+  player-not-found: "&e%PLAYER% is not online or has never existed."

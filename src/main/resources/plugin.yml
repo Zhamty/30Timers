@@ -1,0 +1,25 @@
+name: 30Timers
+version: '${project.version}'
+main: com.zhamty.thirtytimers.Main
+api-version: '1.20'
+authors: [Zhamty]
+description: Random items every x seconds!
+website: 'https://modrinth.com/plugin/30timers'
+softdepend: [PlaceholderAPI]
+
+permission:
+  30timers.admin:
+    description: Access to /30timersadmin
+    default: op
+  30timers.toggle.own:
+    description: Toggle random items for self
+    default: op
+  30timers.toggle.others:
+    description: Toggle random items for others
+    default: op
+  30timers.toggle.global:
+    description: Toggle random items globally
+    default: op
+  30timers.reload:
+    description: Access to /30timersadmin reload
+    default: op
