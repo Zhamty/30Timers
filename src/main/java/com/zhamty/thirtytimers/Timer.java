@@ -44,7 +44,7 @@ public class Timer {
 
         remainingTime -= 1;
 
-        if (remainingTime > 0) {
+        if (remainingTime <= 0) {
             playerItems.clear();
         }
         for (Player player : Bukkit.getServer().getOnlinePlayers()){
