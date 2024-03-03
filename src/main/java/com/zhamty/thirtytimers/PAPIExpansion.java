@@ -40,6 +40,7 @@ public class PAPIExpansion extends PlaceholderExpansion {
             return String.valueOf(plugin.getTimer().getInitialTime());
         }
         if (params.equalsIgnoreCase("item")) {
+            if (player == null) return null;
             return Utils.getItemName(plugin.getTimer().getLastItem(player));
         }
         if (params.equalsIgnoreCase("toggled")) {
