@@ -39,6 +39,7 @@ public final class Main extends JavaPlugin {
         registerCommands();
         metrics = new Metrics(this, bstatsPluginId);
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
+            confManager.hasPlaceholderAPI = true;
             new PAPIExpansion(this).register();
         }
         timer.start();
