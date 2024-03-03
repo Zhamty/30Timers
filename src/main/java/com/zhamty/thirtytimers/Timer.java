@@ -22,7 +22,7 @@ public class Timer {
     int remainingTime = 30;
     boolean running;
     BukkitTask timerTask;
-    public HashMap<OfflinePlayer, ItemStack> playerItems = new HashMap<>();
+    public HashMap<String, ItemStack> playerItems = new HashMap<>();
 
     public int getRemainingTime(){
         return remainingTime;
@@ -57,7 +57,7 @@ public class Timer {
 
             if (remainingTime > 0) continue;
             ItemStack item = giveRandomItem(player);
-            playerItems.put(player, item);
+            playerItems.put(player.getName(), item);
         }
         if (remainingTime > 0) return;
         remainingTime = initialTime;
@@ -121,7 +121,7 @@ public class Timer {
     }
 
     public ItemStack getLastItem(OfflinePlayer player){
-        return playerItems.get(player);
+        return playerItems.get(player.getName());
     }
 
     public boolean isRunning() {
