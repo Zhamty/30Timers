@@ -28,13 +28,13 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        instance = this;
         confManager = new ConfigManager(this);
         confManager.updateConfig();
     }
 
     @Override
     public void onEnable() {
-        instance = this;
         registerToggles();
         registerCommands();
         metrics = new Metrics(this, bstatsPluginId);
@@ -49,7 +49,8 @@ public final class Main extends JavaPlugin {
         super.reloadConfig();
         if (confManager == null) return;
         confManager.updateConfig();
-        timer.start();
+        if (Bukkit.getPluginManager().isPluginEnabled("30Timers"))
+            timer.start();
     }
 
     public Timer getTimer() {
