@@ -71,7 +71,8 @@ public class ConfigManager {
     public boolean canGetRandomItem(Player player){
         boolean toggled = plugin.getToggles().getBoolean(player.getName(), true);
         boolean gamemodeDisallowed = getConfig().getStringList("disabled_gamemodes").contains(player.getGameMode().toString());
-        if (!toggled || gamemodeDisallowed) return false;
+        boolean dead = player.isDead();
+        if (!toggled || gamemodeDisallowed || dead) return false;
 
         if (getWorldListType() == WorldListType.WHITELIST && isWorldInList(player.getWorld())){
             return true;
