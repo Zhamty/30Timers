@@ -2,6 +2,7 @@ package com.zhamty.thirtytimers.commands;
 
 import com.zhamty.thirtytimers.Main;
 import com.zhamty.thirtytimers.Timer;
+import com.zhamty.thirtytimers.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -33,14 +34,14 @@ public class AdminCommand extends Command implements CommandExecutor {
         Player player_sender = null;
         try {
             player_sender = (Player) sender;
-        } catch (Exception ignore) { }
+        } catch (Exception ignore) {
+        }
         switch (subcommand) {
             case "help":
                 for (String line : plugin.getConfig().getStringList("messages.commands.help_admin")) {
-
-                    String parsedLine = line.replaceAll("%COMMAND%",
+                    String parsedLine = Utils.getFormattedString(line.replaceAll("%COMMAND%",
                             plugin.getConfManager().getFormattedString("admin_command", player_sender)
-                    );
+                    ), player_sender);
                     sender.sendMessage(parsedLine);
                 }
                 break;

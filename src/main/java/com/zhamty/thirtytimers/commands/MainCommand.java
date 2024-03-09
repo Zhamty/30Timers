@@ -35,8 +35,9 @@ public class MainCommand extends Command implements CommandExecutor {
         switch (subcommand) {
             case "help":
                 for (String line : plugin.getConfig().getStringList("messages.commands.help")) {
-                    String parsedLine = line.replaceAll("%COMMAND%", plugin.getConfManager().
-                            getFormattedString("main_command", player_sender));
+                    String parsedLine = Utils.getFormattedString(line.replaceAll("%COMMAND%",
+                            plugin.getConfManager().getFormattedString("main_command", player_sender)
+                    ), player_sender);
                     sender.sendMessage(parsedLine);
                 }
                 break;
