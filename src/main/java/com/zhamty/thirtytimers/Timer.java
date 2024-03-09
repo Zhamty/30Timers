@@ -1,7 +1,5 @@
 package com.zhamty.thirtytimers;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -16,6 +14,8 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.zhamty.thirtytimers.Utils.*;
 
 public class Timer {
     int initialTime = 30;
@@ -35,7 +35,7 @@ public class Timer {
         running = true;
         initialTime = ConfigManager.instance.getConfig().getInt("time_between_items", 30);
         remainingTime = initialTime;
-        if (timerTask != null && !timerTask.isCancelled()) timerTask.cancel();
+        if (timerTask != null) timerTask.cancel();
         timerTask = Bukkit.getScheduler().runTaskTimerAsynchronously(Main.instance, this::second, 0L, 20L);
     }
 
@@ -52,7 +52,7 @@ public class Timer {
 
             if (ConfigManager.instance.showActionbar(remainingTime)) {
                 String message = ConfigManager.instance.getActionBarText(remainingTime, player);
-                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(message));
+                sendActionBar(player, message);
             }
 
             if (remainingTime > 0) continue;
@@ -99,9 +99,9 @@ public class Timer {
         SecureRandom sr = new SecureRandom();
         List<Material> items = Arrays.asList(Material.values());
         Material item = items.get(sr.nextInt(items.size()));
-        if (!item.isEnabledByFeature(Bukkit.getServer().getWorlds().get(0))
-                || !item.isItem()
-                || item.isAir()
+        if (!isEnabledByFeature(item)
+                || !isItem(item)
+                || isAir(item)
                 || Main.instance.getConfig().getStringList("blacklisted_items").contains(item.name()))
             return getRandomItem();
 
@@ -110,8 +110,8 @@ public class Timer {
             ItemMeta meta = itemStack.getItemMeta();
             SecureRandom sr2 = new SecureRandom();
 
-            List<Enchantment> enchantments = Registry.ENCHANTMENT.stream().toList();
-            Enchantment e = enchantments.get(sr2.nextInt(enchantments.size()));
+            Enchantment[] enchantments = (Enchantment[]) Registry.ENCHANTMENT.stream().toArray();
+            Enchantment e = enchantments[sr2.nextInt(enchantments.length)];
 
             assert meta != null;
             meta.addEnchant(e, 1, true);

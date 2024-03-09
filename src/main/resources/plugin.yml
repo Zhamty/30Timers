@@ -1,11 +1,11 @@
 name: 30Timers
 version: '${project.version}'
 main: com.zhamty.thirtytimers.Main
-api-version: '1.20'
+api-version: '1.13'
 authors: [Zhamty]
 description: Random items every x seconds!
 website: 'https://modrinth.com/plugin/30timers'
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, ProtocolLib]
 
 permission:
   30timers.admin:

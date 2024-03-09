@@ -1,5 +1,7 @@
 package com.zhamty.thirtytimers;
 
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import com.zhamty.thirtytimers.commands.AdminCommand;
 import com.zhamty.thirtytimers.commands.MainCommand;
 import org.bstats.bukkit.Metrics;
@@ -17,6 +19,8 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import static com.zhamty.thirtytimers.Utils.getVersionIndex;
+
 public final class Main extends JavaPlugin {
     public static Main instance;
     public FileConfiguration toggles = null;
@@ -25,6 +29,7 @@ public final class Main extends JavaPlugin {
     private File togglesFile = null;
     int bstatsPluginId = 21201;
     Metrics metrics;
+    ProtocolManager protocolManager;
 
     @Override
     public void onLoad() {
@@ -41,6 +46,13 @@ public final class Main extends JavaPlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
             confManager.hasPlaceholderAPI = true;
             new PAPIExpansion(this).register();
+        }
+        if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")){
+            protocolManager = ProtocolLibrary.getProtocolManager();
+        } else if (getVersionIndex(1) < 10) {
+            getLogger().severe("ProcolLib is needed for 30Timers in Minecraft 1.9 or earlier. Disabling 30Timers");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
         timer.start();
     }

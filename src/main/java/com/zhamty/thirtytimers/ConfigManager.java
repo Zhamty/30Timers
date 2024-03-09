@@ -1,6 +1,7 @@
 package com.zhamty.thirtytimers;
 
 import org.bukkit.World;
+import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -28,11 +29,13 @@ public class ConfigManager {
     }
 
     public void updateConfig(){
+        getConfig().setDefaults(new MemoryConfiguration());
         defaultConfig.getValues(true).forEach((key, value) -> {
-            if (!getConfig().contains(key, true)){
+            if (!getConfig().contains(key)){
                 getConfig().set(key, value);
             }
         });
+        getConfig().setDefaults(defaultConfig);
         plugin.saveConfig();
     }
 
