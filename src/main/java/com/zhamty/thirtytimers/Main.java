@@ -21,6 +21,9 @@ import java.util.Objects;
 
 import static com.zhamty.thirtytimers.Utils.getVersionIndex;
 
+/**
+ * Main plugin class
+ */
 public final class Main extends JavaPlugin {
     public static Main instance;
     public FileConfiguration toggles = null;
@@ -31,6 +34,9 @@ public final class Main extends JavaPlugin {
     Metrics metrics;
     ProtocolManager protocolManager;
 
+    /**
+     * On load plugin logic (Used by bukkit)
+     */
     @Override
     public void onLoad() {
         instance = this;
@@ -38,6 +44,9 @@ public final class Main extends JavaPlugin {
         confManager.updateConfig();
     }
 
+    /**
+     * On enable plugin logic (Used by bukkit)
+     */
     @Override
     public void onEnable() {
         registerToggles();
@@ -50,13 +59,18 @@ public final class Main extends JavaPlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")){
             protocolManager = ProtocolLibrary.getProtocolManager();
         } else if (getVersionIndex(1) < 10) {
-            getLogger().severe("ProcolLib is needed for 30Timers in Minecraft 1.9 or earlier. Disabling 30Timers");
+            getLogger().severe(
+                    "ProcolLib is needed for 30Timers in Minecraft 1.9 or earlier. Disabling 30Timers"
+            );
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
         timer.start();
     }
 
+    /**
+     * Reload plugin config (used internally)
+     */
     @Override
     public void reloadConfig() {
         super.reloadConfig();
@@ -66,15 +80,23 @@ public final class Main extends JavaPlugin {
             timer.start();
     }
 
+    /**
+     * Get current active timer
+     * @return current active timer
+     */
     public Timer getTimer() {
         return timer;
     }
 
+    /**
+     * Get current config manager
+     * @return current config manager
+     */
     public ConfigManager getConfManager() {
         return confManager;
     }
 
-    public void registerCommands() {
+    void registerCommands() {
         CommandMap commandMap = null;
         try {
             Field f = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
@@ -87,10 +109,14 @@ public final class Main extends JavaPlugin {
 
         String main = getConfig().getString("config.main_command", "30timers");
         String admin = getConfig().getString("config.admin_command", "30timersadmin");
-        commandMap.register(main, new MainCommand(this, main));
-        commandMap.register(admin, new AdminCommand(this, admin));
+        commandMap.register(main, new MainCommand(this, main, null));
+        commandMap.register(admin, new AdminCommand(this, admin, "30timers.admin"));
     }
 
+    /**
+     * Get player timer toggles
+     * @return Player timer toggles
+     */
     public FileConfiguration getToggles() {
         if (toggles == null) {
             reloadToggles();
@@ -98,6 +124,9 @@ public final class Main extends JavaPlugin {
         return toggles;
     }
 
+    /**
+     * Reload toggles from file
+     */
     public void reloadToggles() {
         if (toggles == null) {
             togglesFile = new File(getDataFolder() + "/saved_data/", "toggles.yml");
@@ -109,6 +138,9 @@ public final class Main extends JavaPlugin {
         toggles.setDefaults(YamlConfiguration.loadConfiguration(defConfigStream));
     }
 
+    /**
+     * Save toggles to file
+     */
     public void saveToggles() {
         try {
             toggles.save(togglesFile);
@@ -117,6 +149,9 @@ public final class Main extends JavaPlugin {
         }
     }
 
+    /**
+     * Load toggles from file
+     */
     public void registerToggles() {
         togglesFile = new File(this.getDataFolder() + "/saved_data/", "toggles.yml");
         if (!togglesFile.exists()) {
@@ -125,6 +160,9 @@ public final class Main extends JavaPlugin {
         }
     }
 
+    /**
+     * On disable plugin logic (Used by bukkit)
+     */
     @Override
     public void onDisable() {
         if (timer != null)

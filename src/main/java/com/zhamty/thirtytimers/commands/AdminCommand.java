@@ -2,145 +2,97 @@ package com.zhamty.thirtytimers.commands;
 
 import com.zhamty.thirtytimers.Main;
 import com.zhamty.thirtytimers.Timer;
-import com.zhamty.thirtytimers.Utils;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
+import java.util.HashMap;
 
-public class AdminCommand extends Command implements CommandExecutor {
-    public Main plugin;
-
-    public AdminCommand(Main plugin, String name) {
-        super(name);
-        this.plugin = plugin;
-        this.setPermission("30timers.admin");
+/**
+ * 30timers admin command (/30timersadmin)
+ */
+public class AdminCommand extends Command {
+    @Override
+    String helpLinesPath(){ return "messages.commands.help_admin"; }
+    public AdminCommand(Main plugin, String name, @Nullable String permission) {
+        super(plugin, name, permission);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull String subcommand, @NotNull String[] args) {
+        if (super.onCommand(sender, subcommand, args)) return true;
 
-        String subcommand;
-        try {
-            subcommand = args[0];
-        } catch (IndexOutOfBoundsException ex) {
-            subcommand = "help";
-        }
-
-        Player player_sender = null;
-        try {
-            player_sender = (Player) sender;
-        } catch (Exception ignore) {
-        }
+        HashMap<String, String> placeholders = new HashMap<>();
         switch (subcommand) {
-            case "help":
-                for (String line : plugin.getConfig().getStringList("messages.commands.help_admin")) {
-                    String parsedLine = Utils.getFormattedString(line.replaceAll("%COMMAND%",
-                            plugin.getConfManager().getFormattedString("admin_command", player_sender)
-                    ), player_sender);
-                    sender.sendMessage(parsedLine);
-                }
-                break;
             case "toggle":
-                if (args.length == 1) {
-                    if (!sender.hasPermission("30timers.toggle.global")) return false;
-
-                    Timer timer = plugin.getTimer();
-
-                    if (!timer.isRunning()) {
-                        timer.start();
-                        String message = plugin.getConfManager()
-                                .getFormattedString("messages.random_items.enable_global", player_sender);
-                        plugin.getServer().broadcastMessage(message);
-                    } else {
-                        timer.stop();
-                        String message = plugin.getConfManager()
-                                .getFormattedString("messages.random_items.disable_global", player_sender);
-                        plugin.getServer().broadcastMessage(message);
-                    }
-
-                    break;
+                //<editor-fold desc="/<command> toggle"
+                Timer timer = plugin.getTimer();
+                if (args.length == 1 && sender.hasPermission("30timers.toggle.global")) {
+                    timer.toggleStop(true);
+                    return true;
                 }
-                if (args.length == 3) {
-                    if (!sender.hasPermission("30timers.toggle.others")) return false;
-
+                //</editor-fold>
+                //<editor-fold desc="/<command> toggle <player> <on/off>">
+                if (args.length == 3 && sender.hasPermission("30timers.toggle.others")) {
                     Player player = Bukkit.getPlayer(args[1]);
                     boolean newToggle = args[2].equalsIgnoreCase("on");
                     assert player != null;
                     plugin.getConfManager().toggleRandomItems(newToggle, player);
-                    if (newToggle) {
-                        sender.sendMessage(plugin.getConfManager()
-                                .getFormattedString("messages.commands.toggle.enable_player", player_sender)
-                                .replaceAll("%PLAYER%", player.getDisplayName()));
-                    } else {
-                        sender.sendMessage(plugin.getConfManager()
-                                .getFormattedString("messages.commands.toggle.disable_player", player_sender)
-                                .replaceAll("%PLAYER%", player.getDisplayName()));
-                    }
 
-                    break;
+                    placeholders.put("PLAYER", player.getDisplayName());
+                    String path = "messages.commands.toggle.disable_player";
+                    if (newToggle)
+                        path = "messages.commands.toggle.enable_player";
+
+                    plugin.getConfManager().sendFormattedString(sender, path, placeholders);
+                    return true;
                 }
-                if (args.length == 2 && (args[1].equalsIgnoreCase("on")
+                //</editor-fold>
+                if (args.length != 2) return false;
+                //<editor-fold desc="/<command> toggle <on/off>">
+                if (sender.hasPermission("30timers.toggle.global")
+                        && (args[1].equalsIgnoreCase("on")
                         || args[1].equalsIgnoreCase("off"))) {
 
-                    if (!sender.hasPermission("30timers.toggle.global")) return false;
-                    Timer timer = plugin.getTimer();
                     boolean oldValue = timer.isRunning();
                     boolean newValue = args[1].equalsIgnoreCase("on");
+
                     if (oldValue == newValue) {
-                        sender.sendMessage(plugin.getConfManager()
-                                .getFormattedString("messages.commands.toggle.nothing_changed", player_sender));
+                        plugin.getConfManager().sendFormattedString(sender,
+                                "messages.commands.toggle.nothing_changed");
                         return true;
                     }
-                    if (!timer.isRunning()) {
-                        timer.start();
-                        plugin.getServer().broadcastMessage(plugin.getConfManager()
-                                .getFormattedString("messages.random_items.enable_global", player_sender));
-                    } else {
-                        timer.stop();
-                        plugin.getServer().broadcastMessage(plugin.getConfManager()
-                                .getFormattedString("messages.random_items.disable_global", player_sender));
-                    }
-                    break;
+                    timer.toggleStop(true);
+                    return true;
+
                 }
+                //</editor-fold>
+                //<editor-fold desc="/<command> toggle <player>">
                 if (!sender.hasPermission("30timers.toggle.others")) return false;
                 Player player = Bukkit.getPlayer(args[1]);
                 assert player != null;
                 boolean newToggle = plugin.getConfManager().toggleRandomItems(player);
-                if (newToggle) {
-                    sender.sendMessage(plugin.getConfManager()
-                            .getFormattedString("messages.commands.toggle.enable_player", player_sender)
-                            .replaceAll("%PLAYER%", player.getDisplayName()));
-                } else {
-                    sender.sendMessage(plugin.getConfManager()
-                            .getFormattedString("messages.commands.toggle.disable_player", player_sender)
-                            .replaceAll("%PLAYER%", player.getDisplayName()));
-                }
-                break;
+
+                placeholders.put("PLAYER", player.getDisplayName());
+                String path = "messages.commands.toggle.disable_player";
+                if (newToggle)
+                    path = "messages.commands.toggle.enable_player";
+
+                plugin.getConfManager().sendFormattedString(sender, path, placeholders);
+                return true;
+            //</editor-fold>
             case "reload":
                 if (!sender.hasPermission("30timers.reload")) return false;
-                sender.sendMessage(plugin.getConfManager()
-                        .getFormattedString("messages.commands.reload.reloading", player_sender));
+                plugin.getConfManager().sendFormattedString(sender, "messages.commands.reload.reloading");
                 plugin.reloadConfig();
                 plugin.reloadToggles();
-                sender.sendMessage(plugin.getConfManager()
-                        .getFormattedString("messages.commands.reload.reloaded", player_sender));
-                break;
-            default:
-                sender.sendMessage(plugin.getConfManager()
-                        .getFormattedString("messages.commands.unknown", player_sender)
-                        .replaceAll("%COMMAND%", Objects.requireNonNull(plugin.getConfig().getString("admin_command"))));
-                return false;
+                plugin.getConfManager().sendFormattedString(sender, "messages.commands.reload.reloaded");
+                return true;
         }
-        return true;
-    }
-
-    @Override
-    public boolean execute(@NotNull CommandSender sender, @NotNull String label, String[] args) {
-        return onCommand(sender, this, label, args);
+        placeholders.put("COMMAND", getName());
+        plugin.getConfManager().sendFormattedString(sender, "messages.commands.unknown", placeholders);
+        return false;
     }
 }

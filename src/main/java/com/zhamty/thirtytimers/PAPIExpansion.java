@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * PlaceholderAPI 30Timers internal Expansion
+ */
 public class PAPIExpansion extends PlaceholderExpansion {
     private final Main plugin;
     public PAPIExpansion(Main plugin) {

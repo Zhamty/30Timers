@@ -1,15 +1,15 @@
 # The time between random items (in seconds)
 time_between_items: 30
-# Enable the action bar to be shown with the time left
+# Enable the action bar to be shown with the left time
 allow_action_bar: true
-# How many seconds have to be left in order to show the action bar.
+# How many seconds have to be left in order to show the action bar
 action_bar_seconds: 30
 # Name for the main command /<value>
 main_command: 30timers
 # Name for the admin command /<value>
 admin_command: 30timersadmin
 disabled_gamemodes:
-  # Gamemodes in which the timer does not run
+  # Gamemodes in which random items aren't given
   - CREATIVE
   - SPECTATOR
 
@@ -30,6 +30,7 @@ blacklisted_items:
   - "CHAINED_COMMAND_BLOCK"
   - "REPEATING_COMMAND_BLOCK"
 
+# Translatable messages
 messages:
   commands:
     help:

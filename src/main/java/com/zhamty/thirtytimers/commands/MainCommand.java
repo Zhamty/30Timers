@@ -2,86 +2,60 @@ package com.zhamty.thirtytimers.commands;
 
 import com.zhamty.thirtytimers.Main;
 import com.zhamty.thirtytimers.Utils;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
+import java.util.HashMap;
 
-public class MainCommand extends Command implements CommandExecutor {
-    public Main plugin;
-
-    public MainCommand(Main plugin, String name) {
-        super(name);
-        this.plugin = plugin;
+/**
+ * 30Timers main command (/30timers)
+ */
+public class MainCommand extends Command {
+    @Override
+    String helpLinesPath(){ return "messages.commands.help"; }
+    public MainCommand(Main plugin, String name, @Nullable String permission) {
+        super(plugin, name, permission);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
-
-        String subcommand;
-        try {
-            subcommand = args[0];
-        } catch (IndexOutOfBoundsException ex) {
-            subcommand = "help";
-        }
-
-        Player player_sender = null;
-        try {
-            player_sender = (Player) sender;
-        } catch (Exception ignore) { }
-        switch (subcommand) {
-            case "help":
-                for (String line : plugin.getConfig().getStringList("messages.commands.help")) {
-                    String parsedLine = Utils.getFormattedString(line.replaceAll("%COMMAND%",
-                            plugin.getConfManager().getFormattedString("main_command", player_sender)
-                    ), player_sender);
-                    sender.sendMessage(parsedLine);
-                }
-                break;
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull String subcommand, @NotNull String[] args) {
+        if (super.onCommand(sender, subcommand, args)) return true;
+        HashMap<String, String> placeholders = new HashMap<>();
+        switch(subcommand) {
             case "toggle":
                 if (sender.hasPermission("30timers.toggle.own")) {
                     boolean status = !plugin.getToggles().getBoolean(sender.getName(), true);
-                    if (status) {
-                        sender.sendMessage(plugin.getConfManager()
-                                .getFormattedString("messages.random_items.enable", player_sender));
-                    } else {
-                        sender.sendMessage(plugin.getConfManager()
-                                .getFormattedString("messages.random_items.disable", player_sender));
-                    }
+
+                    if (status)
+                        plugin.getConfManager().sendFormattedString(sender, "messages.random_items.enable");
+                    else
+                        plugin.getConfManager().sendFormattedString(sender, "messages.random_items.disable");
+
                     plugin.getToggles().set(sender.getName(), status);
                     plugin.saveToggles();
                 }
-                break;
+                return true;
             case "time":
                 if (plugin.getTimer().getRemainingTime() == 1) {
-                    sender.sendMessage(plugin.getConfManager()
-                            .getFormattedString("messages.commands.time.singular", player_sender));
-                    break;
+                    plugin.getConfManager().sendFormattedString(sender, "messages.commands.time.singular");
+                    return true;
                 }
-                sender.sendMessage(plugin.getConfManager()
-                        .getFormattedString("messages.commands.time.plural", player_sender)
-                        .replaceAll("%TIME%", String.valueOf(plugin.getTimer().getRemainingTime())));
-                break;
+                placeholders.put("TIME", String.valueOf(plugin.getTimer().getRemainingTime()));
+                plugin.getConfManager().sendFormattedString(sender,
+                        "messages.commands.time.plural", placeholders);
+                return true;
             case "about":
-                sender.sendMessage(Utils.getFormattedString("&f----- &b&l30Timers &f-----\n"
-                        + "&bPlugin created by &fZhamty\n"
-                        + "&bVersion: &f" + plugin.getDescription().getVersion() + "\n"
-                        + "&f----- &b&l30Timers &f-----", player_sender));
-                break;
-            default:
-                sender.sendMessage(plugin.getConfManager()
-                        .getFormattedString("messages.commands.unknown", player_sender)
-                        .replaceAll("%COMMAND%", Objects.requireNonNull(plugin.getConfig().getString("main_command"))));
-                return false;
+                Utils.sendFormattedMessage(sender,
+                        "&f----- &b&l30Timers &f-----\n"
+                                + "&bPlugin created by &fZhamty\n"
+                                + "&bVersion: &f" + plugin.getDescription().getVersion() + "\n"
+                                + "&f----- &b&l30Timers &f-----"
+                );
+                return true;
         }
-        return true;
-    }
-
-    @Override
-    public boolean execute(@NotNull CommandSender sender, @NotNull String label, String[] args) {
-        return onCommand(sender, this, label, args);
+        placeholders.put("COMMAND", getName());
+        plugin.getConfManager().sendFormattedString(sender, "messages.commands.unknown", placeholders);
+        return false;
     }
 }
