@@ -22,13 +22,21 @@ worlds:
     - "world"
     - "world_nether"
 
-# List of items that will not be given to players
-blacklisted_items:
-  - "BARRIER"
-  - "BEDROCK"
-  - "COMMAND_BLOCK"
-  - "CHAINED_COMMAND_BLOCK"
-  - "REPEATING_COMMAND_BLOCK"
+# List of items that will be given to players (if it's enabled).
+items_list:
+  # List type, set to None to use all game items
+  # Available types: WHITELIST, BLACKLIST, NONE
+  list_type: NONE
+  list:
+    - "BARRIER"
+    - "BEDROCK"
+    - "COMMAND_BLOCK"
+    - "CHAINED_COMMAND_BLOCK"
+    - "REPEATING_COMMAND_BLOCK"
+  # A list of IDs from custom item providers like ItemsAdder or Oraxen.
+  # Items in this list will be used to give random items too.
+  custom:
+    - ""
 
 # Translatable messages
 messages:

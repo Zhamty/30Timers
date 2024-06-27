@@ -1,5 +1,6 @@
 package com.zhamty.thirtytimers;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -11,11 +12,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.security.SecureRandom;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import static com.zhamty.thirtytimers.Utils.*;
 
 /**
  * Random items timer manager
@@ -26,6 +25,7 @@ public class Timer {
     boolean running;
     BukkitTask timerTask;
     HashMap<String, ItemStack> playerItems = new HashMap<>();
+    static List<ItemStack> giveableItems = new ArrayList<>();
 
     /**
      * Get remaining time
@@ -50,6 +50,7 @@ public class Timer {
         initialTime = ConfigManager.instance.getConfig().getInt("time_between_items", 30);
         stop();
         running = true;
+        giveableItems = Main.instance.confManager.getGiveableItems();
         timerTask = Bukkit.getScheduler().runTaskTimerAsynchronously(Main.instance, this::second, 0L, 20L);
     }
 
@@ -60,8 +61,10 @@ public class Timer {
     public void start(boolean broadcast){
         start();
         if (broadcast){
-            Main.instance.getServer().broadcastMessage(Main.instance.getConfManager()
-                    .getFormattedString("messages.random_items.enable_global", null));
+            Component message = ConfigManager.instance.getFormattedComponent(
+                    "messages.random_items.enable_global",null);
+            Main.instance.adventure().players().sendMessage(message);
+
         }
     }
 
@@ -77,8 +80,8 @@ public class Timer {
             if (!ConfigManager.instance.canGetRandomItem(player)) continue;
 
             if (ConfigManager.instance.showActionbar(remainingTime)) {
-                String message = ConfigManager.instance.getActionBarText(remainingTime, player);
-                sendActionBar(player, message);
+                Component component = ConfigManager.instance.getActionBarComponent(remainingTime, player);
+                Main.instance.adventure().player(player).sendActionBar(component);
             }
 
             if (remainingTime > 0) continue;
@@ -120,8 +123,9 @@ public class Timer {
     public void stop(boolean broadcast){
         stop();
         if (broadcast){
-            Main.instance.getServer().broadcastMessage(Main.instance.getConfManager()
-                    .getFormattedString("messages.random_items.disable_global", null));
+            Component message = ConfigManager.instance.getFormattedComponent(
+                    "messages.random_items.disable_global",null);
+            Main.instance.adventure().players().sendMessage(message);
         }
     }
 
@@ -167,10 +171,12 @@ public class Timer {
             player.getInventory().addItem(randomItem);
         else dropItemSynchronously(player, randomItem);
 
-        String message = ConfigManager.instance.getFormattedString(
-                "messages.random_items.on_item_receive_chat", player);
-        message = message.replaceAll("%ITEM%", Utils.getItemName(randomItem));
-        player.sendMessage(message);
+        HashMap<String, String> placeholders = new HashMap<>();
+        placeholders.put("ITEM", Utils.getItemName(randomItem));
+        Component message = ConfigManager.instance.getFormattedComponent(
+                "messages.random_items.on_item_receive_chat", player, placeholders
+        );
+        Main.instance.adventure().player(player).sendMessage(message);
 
         return randomItem;
     }
@@ -181,29 +187,26 @@ public class Timer {
      */
     public static ItemStack getRandomItem() {
         SecureRandom sr = new SecureRandom();
-        List<Material> items = Arrays.asList(Material.values());
-        Material item = items.get(sr.nextInt(items.size()));
+        ItemStack itemStack = giveableItems.get(sr.nextInt(giveableItems.size()));
 
-        if (!isEnabledByFeature(item)
-                || !isItem(item)
-                || isAir(item)
-                || Main.instance.getConfig().getStringList("blacklisted_items").contains(item.name()))
-            return getRandomItem();
-
-        ItemStack itemStack = new ItemStack(item, 1);
         if(itemStack.getType().equals(Material.ENCHANTED_BOOK)) {
-            ItemMeta meta = itemStack.getItemMeta();
-            sr = new SecureRandom();
-
-            Enchantment[] enchantments = (Enchantment[]) Registry.ENCHANTMENT.stream().toArray();
-            Enchantment e = enchantments[sr.nextInt(enchantments.length)];
-
-            assert meta != null;
-            meta.addEnchant(e, 1, true);
-            itemStack.setItemMeta(meta);
+            addRandomEnchantment(itemStack);
         }
         return itemStack;
     }
+
+    public static void addRandomEnchantment(ItemStack itemStack) {
+        ItemMeta meta = itemStack.getItemMeta();
+        SecureRandom sr = new SecureRandom();
+
+        Enchantment[] enchantments = (Enchantment[]) Registry.ENCHANTMENT.stream().toArray();
+        Enchantment e = enchantments[sr.nextInt(enchantments.length)];
+
+        assert meta != null;
+        meta.addEnchant(e, 1, true);
+        itemStack.setItemMeta(meta);
+    }
+
 
     /**
      * Get a player last given item

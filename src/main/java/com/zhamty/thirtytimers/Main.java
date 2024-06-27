@@ -4,6 +4,7 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.zhamty.thirtytimers.commands.AdminCommand;
 import com.zhamty.thirtytimers.commands.MainCommand;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
@@ -33,6 +34,7 @@ public final class Main extends JavaPlugin {
     int bstatsPluginId = 21201;
     Metrics metrics;
     ProtocolManager protocolManager;
+    BukkitAudiences adventure;
 
     /**
      * On load plugin logic (Used by bukkit)
@@ -44,6 +46,13 @@ public final class Main extends JavaPlugin {
         confManager.updateConfig();
     }
 
+    public BukkitAudiences adventure(){
+        if(this.adventure == null) {
+            throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
+        }
+        return this.adventure;
+    }
+
     /**
      * On enable plugin logic (Used by bukkit)
      */
@@ -52,9 +61,16 @@ public final class Main extends JavaPlugin {
         registerToggles();
         registerCommands();
         metrics = new Metrics(this, bstatsPluginId);
+        this.adventure = BukkitAudiences.create(this);
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")){
             confManager.hasPlaceholderAPI = true;
             new PAPIExpansion(this).register();
+        }
+        if (Bukkit.getPluginManager().isPluginEnabled("Oraxen")){
+            confManager.hasOraxen = true;
+        }
+        if (Bukkit.getPluginManager().isPluginEnabled("ItemsAdder")){
+            confManager.hasItemsAdder = true;
         }
         if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")){
             protocolManager = ProtocolLibrary.getProtocolManager();
@@ -66,7 +82,15 @@ public final class Main extends JavaPlugin {
             return;
         }
         timer.start();
+        getLogger().info("--------------------");
+        getLogger().info("30Timers enabled");
+        getLogger().info("PlaceholderAPI: " + confManager.hasPlaceholderAPI);
+        getLogger().info("Oraxen: " + confManager.hasOraxen);
+        getLogger().info("ItemsAdder: " + confManager.hasItemsAdder);
+        getLogger().info("--------------------");
+
     }
+
 
     /**
      * Reload plugin config (used internally)
@@ -165,7 +189,13 @@ public final class Main extends JavaPlugin {
      */
     @Override
     public void onDisable() {
-        if (timer != null)
+        if (timer != null) {
             timer.stop();
+            this.timer = null;
+        }
+        if(this.adventure != null) {
+            this.adventure.close();
+            this.adventure = null;
+        }
     }
 }

@@ -5,11 +5,15 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.gson.JsonObject;
+import dev.lone.itemsadder.api.CustomStack;
+import io.th0rgal.oraxen.api.OraxenItems;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -29,6 +33,7 @@ public class Utils {
      * ProtocolLib is needed for 1.9.4 and earlier.
      * @param player player to send
      * @param text text to be sent
+     * @deprecated Use adventure API instead. Will be removed in future releases
      */
     public static void sendActionBar(Player player, String text){
         if (getVersionIndex(1) < 10) {
@@ -57,7 +62,7 @@ public class Utils {
     public static int getVersionIndex(int index){
         String string = Bukkit.getServer().getVersion().split("\\.")[index];
         string = string.replaceAll("[()]", "");
-        return Integer.parseInt(string);
+        return Integer.parseInt(string.split("-")[0]);
     }
 
     /**
@@ -174,13 +179,14 @@ public class Utils {
      * @param string string to format
      * @param player player to parse PlaceholderAPI
      * @return formatted string
+     * @deprecated Use getFormattedComponent instead. Will be removed in future releases
      */
     public static String getFormattedString(String string, Player player){
-        String formattedString = ChatColor.translateAlternateColorCodes('&', string);
         if (Main.instance.confManager.hasPlaceholderAPI) {
-            formattedString = PlaceholderAPI.setPlaceholders(player, formattedString);
+            string = PlaceholderAPI.setPlaceholders(player, string);
         }
-        return formattedString;
+
+        return LegacyComponentSerializer.legacySection().serialize(getFormattedComponent(string, player));
     }
 
     /**
@@ -189,6 +195,7 @@ public class Utils {
      * @param player player to parse PlaceholderAPI
      * @param placeholders placeholders to parse
      * @return formatted string
+     * @deprecated Use getFormattedComponent instead. Will be removed in future releases
      */
     public static String getFormattedString(String string, Player player, HashMap<String, String> placeholders){
         if (placeholders == null) return getFormattedString(string, player);
@@ -199,11 +206,52 @@ public class Utils {
     }
 
     /**
+     * Parse a string (Minimessage, legacy, custom placeholders and PlaceholderAPI) into an Adventure Component
+     * @param string string to format
+     * @param player player to parse PlaceholderAPI
+     * @param placeholders placeholders to parse
+     * @return formatted component
+     */
+    public static Component getFormattedComponent(String string, Player player, HashMap<String, String> placeholders){
+        if (placeholders == null) return getFormattedComponent(string, player);
+        for (Map.Entry<String, String> placeholder : placeholders.entrySet()){
+            string = string.replaceAll("%"+placeholder.getKey()+"%", placeholder.getValue());
+        }
+        return getFormattedComponent(string, player);
+    }
+
+    /**
+     * Parse a string (Minimessage, legacy and PlaceholderAPI) into an Adventure Component
+     * @param string string to format
+     * @param player player to parse PlaceholderAPI
+     * @return formatted component
+     */
+    public static Component getFormattedComponent(String string, Player player){
+        if (Main.instance.confManager.hasPlaceholderAPI) {
+            string = PlaceholderAPI.setPlaceholders(player, string);
+        }
+        MiniMessage mm = MiniMessage.miniMessage();
+        String serialized = mm.serialize(LegacyComponentSerializer.legacyAmpersand().deserialize(string));
+        return mm.deserialize(serialized.replaceAll("\\\\<([!?#]?[\\w:#]+)>", "<$1>"));
+    }
+    /**
      * Tries to get a good item name.
      * @param item item to get name
      * @return Item name attemp
      */
     public static String getItemName(ItemStack item){
+        if (ConfigManager.instance.hasOraxen){
+            String id = OraxenItems.getIdByItem(item);
+            if (id != null){
+                return OraxenItems.getItemById(id).getItemName();
+            }
+        }
+        if (ConfigManager.instance.hasItemsAdder){
+            CustomStack customStack = CustomStack.byItemStack(item);
+            if (customStack != null){
+                return customStack.getDisplayName();
+            }
+        }
         return item.getType().name().replaceAll("_", " ").toLowerCase();
     }
 
@@ -214,6 +262,16 @@ public class Utils {
      * @return If inventory is full
      */
     public static boolean isInventoryFull(Player p) {
+        // 1.8-
+        if (getVersionIndex(1) <= 8) {
+            for (int i = 9; i < 45; i++){
+                if (p.getInventory().getContents()[i] == null){
+                    return false;
+                }
+            }
+            return true;
+        }
+        // 1.9+
         for (ItemStack itemStack : p.getInventory().getStorageContents()) {
             if (itemStack == null) return false;
         }
@@ -239,6 +297,6 @@ public class Utils {
         Player toPlayer = null;
         if (to instanceof Player)
             toPlayer = (Player) to;
-        to.sendMessage(getFormattedString(message, toPlayer, placeholders));
+        Main.instance.adventure.sender(to).sendMessage(getFormattedComponent(message, toPlayer, placeholders));
     }
 }

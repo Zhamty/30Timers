@@ -5,7 +5,7 @@ api-version: '1.13'
 authors: [Zhamty]
 description: Random items every x seconds!
 website: 'https://modrinth.com/plugin/30timers'
-softdepend: [PlaceholderAPI, ProtocolLib]
+softdepend: [PlaceholderAPI, ProtocolLib, Oraxen, ItemsAdder]
 
 permission:
   30timers.admin:
