@@ -200,7 +200,7 @@ public class Utils {
     public static String getFormattedString(String string, Player player, HashMap<String, String> placeholders){
         if (placeholders == null) return getFormattedString(string, player);
         for (Map.Entry<String, String> placeholder : placeholders.entrySet()){
-            string = string.replaceAll("%"+placeholder.getKey()+"%", placeholder.getValue());
+            string = string.replace("%"+placeholder.getKey()+"%", placeholder.getValue());
         }
         return getFormattedString(string, player);
     }
@@ -215,7 +215,7 @@ public class Utils {
     public static Component getFormattedComponent(String string, Player player, HashMap<String, String> placeholders){
         if (placeholders == null) return getFormattedComponent(string, player);
         for (Map.Entry<String, String> placeholder : placeholders.entrySet()){
-            string = string.replaceAll("%"+placeholder.getKey()+"%", placeholder.getValue());
+            string = string.replace("%"+placeholder.getKey()+"%", placeholder.getValue());
         }
         return getFormattedComponent(string, player);
     }
@@ -252,7 +252,7 @@ public class Utils {
                 return customStack.getDisplayName();
             }
         }
-        return item.getType().name().replaceAll("_", " ").toLowerCase();
+        return item.getType().name().replace('_', ' ').toLowerCase();
     }
 
     /**

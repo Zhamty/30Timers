@@ -338,7 +338,7 @@ public class ConfigManager {
     public Component getActionBarComponent(int remainingTime, Player player) {
         String message = getConfig().getString("messages.random_items.next_item_action_bar");
         assert message != null;
-        message = message.replaceAll("%SECONDS%", String.valueOf(remainingTime));
+        message = message.replace("%SECONDS%", String.valueOf(remainingTime));
         return Utils.getFormattedComponent(message, player);
     }
 
